@@ -1,0 +1,46 @@
+dataloader:
+  batch_size: 2
+  data_path: /content/train/libri_mel80
+  max_timestep: 0
+  n_jobs: 12
+  phone_path: data/libri_phone
+  target_path: ''
+  train_set:
+  - train-clean-360
+optimizer:
+  gradient_accumulation_steps: 8
+  gradient_clipping: 1.0
+  learning_rate: 5e-6
+  loss_scale: 0
+  type: adam
+  warmup_proportion: 0.07
+runner:
+  apex: false
+  duo_feature: false
+  log_step: 100
+  max_keep: 10
+  save_step: 500
+  total_steps: 2000
+transformer:
+  attention_probs_dropout_prob: 0.1
+  downsample_rate: 1
+  hidden_act: gelu
+  hidden_dropout_prob: 0.1
+  hidden_size: 768
+  initializer_range: 0.02
+  input_dim: 80
+  intermediate_size: 3072
+  layer_norm_eps: 1e-12
+  mask_allow_overlap: true
+  mask_bucket_ratio: 1.2
+  mask_consecutive_max: 7
+  mask_consecutive_min: 7
+  mask_frequency: 0
+  mask_proportion: 0.15
+  max_input_length: 240000
+  noise_proportion: 0.0
+  num_attention_heads: 12
+  num_hidden_layers: 3
+  pre_layer_norm: false
+  prune_headids: null
+  share_layer: false
