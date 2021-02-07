@@ -1,4 +1,4 @@
-s3prl_path= '/home/jupyter/rfcx/s3prl'
+s3prl_path= '../s3prl'
 import sys
 sys.path.append(f'{s3prl_path}/transformer/')
 sys.path.append(f'{s3prl_path}/')
