@@ -1,0 +1,9 @@
+batch_size: 3
+ckpt_path: 
+csv_path: /home/jupyter/rfcx/data/train_tp.csv
+data_dir: /home/jupyter/rfcx/data/train
+transformer_config_path: /home/jupyter/rfcx_submission/config/upstream_config.yaml
+transformer_weights_path: /home/jupyter/rfcx/rfcx/model_weights/mockingjay_mel80_no_delta_cmvn_run4/states-2000.ckpt
+training:
+    upstream: False
+    downstream: True

@@ -118,7 +118,8 @@ class Wrapper_Model(torch.nn.Module):
         self.upstream = Upstream_Model(base_transformer_model)
         self.downstream = Downstream_Model()
         
-    def forward(self, spec_stacked, pos_enc, attn_mask):
+    def forward(self, inputs):
+        spec_stacked, pos_enc, attn_mask = inputs
         stacked_encoded_layers = self.upstream(spec_stacked, pos_enc, attn_mask)
         preds = self.downstream(stacked_encoded_layers)
         return preds
