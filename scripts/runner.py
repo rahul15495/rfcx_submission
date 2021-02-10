@@ -6,6 +6,8 @@ import torch
 import pandas as pd
 from argparse import Namespace
 from model_builder import Wrapper_Model
+from metrics import LWLRAP
+from fastai.metrics import AccumMetric
 from dataloader import (get_train_mapping, BaseDataset , get_dataloaders)
 from model import TransformerModel , TransformerForMaskedAcousticModel , TransformerConfig
 
@@ -16,6 +18,7 @@ class Runner():
         self.model = None
         self.dls= None
         self.args = args
+        self.metrics = AccumMetric(LWLRAP)
         
     def set_transformer_model(self):
         '''
