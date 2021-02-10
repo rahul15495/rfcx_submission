@@ -1,9 +1,9 @@
-batch_size: 3
+batch_size: 2
 ckpt_path: 
-csv_path: /home/jupyter/rfcx/data/train_tp.csv
-data_dir: /home/jupyter/rfcx/data/train
-transformer_config_path: /home/jupyter/rfcx_submission/config/upstream_config.yaml
-transformer_weights_path: /home/jupyter/rfcx/rfcx/model_weights/mockingjay_mel80_no_delta_cmvn_run4/states-2000.ckpt
+csv_path: /kaggle/input/rfcx-species-audio-detection/train_tp.csv
+data_dir: /kaggle/input/rfcx-species-audio-detection/train
+transformer_config_path: /kaggle/working/rfcx_submission/config/upstream_config.yaml
+transformer_weights_path: /root/model_weights/mockingjay_pretrained_v4/mockingjay_mel80_no_delta_cmvn_run4/states-2000.ckpt
 training:
     upstream: False
     downstream: True

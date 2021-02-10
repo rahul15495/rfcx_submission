@@ -98,7 +98,7 @@ def get_dataloaders(train_dataset, test_dataset, batch_size, device):
             spec = torch.tensor(spec)
             spec = spec.permute(1, 0)
 
-            label = torch.IntTensor(label).unsqueeze(0)
+            label = torch.FloatTensor(label).unsqueeze(0)
 
             spec, pos_enc, attn_mask = preprocessor.process_MAM_data(spec=spec)
 
