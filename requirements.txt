@@ -1,3 +1,5 @@
 audiomentations==0.15.0
 colorednoise==1.1.1
 noisereduce==1.1.0
+kora
+gsutil
