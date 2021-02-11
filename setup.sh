@@ -5,12 +5,6 @@ git clone --depth 1 --branch v0.1.0  https://github.com/s3prl/s3prl.git
 pip instal -r requirements.txt
 
 
-
-
-
-apt-get install tmux
-
-
 gcloud auth login
 
 mkdir model_weights
@@ -18,4 +12,5 @@ mkdir model_weights
 cd model_weights
 
 gsutil -m cp -r "gs://rahul_chaurasia_rfcx/model_weights/mockingjay_pretrained_v4/" .
+
 
