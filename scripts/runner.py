@@ -7,7 +7,6 @@ import pandas as pd
 from argparse import Namespace
 from model_builder import Wrapper_Model
 from metrics import LWLRAP
-from fastai.metrics import AccumMetric
 from dataloader import (get_train_mapping, BaseDataset , get_dataloaders)
 from model import TransformerModel , TransformerForMaskedAcousticModel , TransformerConfig
 
@@ -16,9 +15,9 @@ class Runner():
         self.device = device
         self.base_transformer_model = None
         self.model = None
-        self.dls= None
+        self.train_dataloader= None
+        self.eval_dataloader= None
         self.args = args
-        self.metrics = AccumMetric(LWLRAP)
         
     def set_transformer_model(self):
         '''
@@ -71,5 +70,7 @@ class Runner():
         mapping = get_train_mapping(df)
         train_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=True, enable_aug=False)
         test_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=False, enable_aug=False)
-        self.dls= get_dataloaders(train_dataset, test_dataset, self.args.batch_size,self.device)
+        train_dataloader, eval_dataloader = get_dataloaders(train_dataset, test_dataset, self.args.batch_size,self.device)
+        self.train_dataloader= train_dataloader
+        self.eval_dataloader= eval_dataloader        
         

@@ -3,3 +3,4 @@ colorednoise==1.1.1
 noisereduce==1.1.0
 kora
 gsutil
+librosa==0.8.0

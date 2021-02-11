@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 from mixup import MixUp
 from augment import do_aug
-from torch.utils.data import Dataset
-from fastai.data.load import DataLoader
-from fastai.data.core import DataLoaders
+from torch.utils.data import (Dataset , DataLoader)
 from preprocessor import Preprocessor
 
 
@@ -98,7 +96,7 @@ def get_dataloaders(train_dataset, test_dataset, batch_size, device):
             spec = torch.tensor(spec)
             spec = spec.permute(1, 0)
 
-            label = torch.IntTensor(label).unsqueeze(0)
+            label = torch.FloatTensor(label).unsqueeze(0)
 
             spec, pos_enc, attn_mask = preprocessor.process_MAM_data(spec=spec)
 
@@ -113,15 +111,14 @@ def get_dataloaders(train_dataset, test_dataset, batch_size, device):
 
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=batch_size,
-                                  create_batch =collate_fn)
+                                  collate_fn =collate_fn)
 
     eval_dataloader = DataLoader(test_dataset,
                                  batch_size=batch_size, 
-                                 create_batch =collate_fn)
+                                 collate_fn =collate_fn)
 
     print(f'training: number of docs : {len(train_dataloader)}')
     print(f'evaluation: number of docs : {len(eval_dataloader)}')
     
-    dls = DataLoaders(train_dataloader, eval_dataloader)
+    return train_dataloader, eval_dataloader
     
-    return dls
