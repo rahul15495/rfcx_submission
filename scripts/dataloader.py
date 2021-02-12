@@ -67,7 +67,13 @@ class BaseDataset(Dataset):
     def __getitem__(self, idx):
         
         if self.enable_mixup:
-            y,label = self.do_mixup(idx)
+            
+            try:
+                y,label = self.do_mixup(idx)
+            except:
+                record= self.mapping[idx]
+                y= self.load_audio(record['recording_id'])
+                label= record['labels']                
         else:
             record= self.mapping[idx]
             y= self.load_audio(record['recording_id'])
@@ -111,11 +117,17 @@ def get_dataloaders(train_dataset, test_dataset, batch_size, device):
 
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=batch_size,
-                                  collate_fn =collate_fn)
+                                  collate_fn =collate_fn,
+                                  num_workers= 4,
+                                  prefetch_factor=4,
+                                 )
 
     eval_dataloader = DataLoader(test_dataset,
                                  batch_size=batch_size, 
-                                 collate_fn =collate_fn)
+                                 collate_fn =collate_fn,
+                                 num_workers= 4,
+                                 prefetch_factor=4,
+                                )
 
     print(f'training: number of docs : {len(train_dataloader)}')
     print(f'evaluation: number of docs : {len(eval_dataloader)}')

@@ -9,6 +9,16 @@ class MixUp:
         '''
         self.denoise = denoise
         self.sr= sr
+        
+    def pad(self, y1, y2):
+        max_shape= max(y1.shape[0], y2.shape[0])
+
+        a= np.zeros(max_shape)
+        b= np.zeros(max_shape)
+
+        a[:y1.shape[0]] = y1
+        b[:y2.shape[0]] = y2
+        return a,b
 
     def __call__(self, y1, y2, alpha=None):
         sr= self.sr
@@ -17,7 +27,10 @@ class MixUp:
         
         option = random.choice([0,1,2,3])
         
-        a,b= y1.copy() , y2.copy()
+        if y1.shape!=y2.shape:
+            a,b= self.pad(y1, y2)
+        else:
+            a,b= y1.copy() , y2.copy()
         
         if option==1:
             a= self.denoise(a, sr)

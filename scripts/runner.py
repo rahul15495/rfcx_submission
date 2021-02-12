@@ -68,9 +68,9 @@ class Runner():
         df= pd.read_csv(self.args.csv_path)
         
         mapping = get_train_mapping(df)
-        train_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=True, enable_aug=False)
+        train_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=False, enable_aug=False)
         test_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=False, enable_aug=False)
-        train_dataloader, eval_dataloader = get_dataloaders(train_dataset, test_dataset, self.args.batch_size,self.device)
+        train_dataloader, eval_dataloader = get_dataloaders(train_dataset, test_dataset, self.args.batch_size,'cpu')
         self.train_dataloader= train_dataloader
         self.eval_dataloader= eval_dataloader        
         

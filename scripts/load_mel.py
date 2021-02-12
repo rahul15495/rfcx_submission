@@ -18,7 +18,13 @@ def _stft_parameters(sample_rate):
 
 def load_audio(audio_file, sample_rate):
     y, sr = librosa.load(audio_file, sr=sample_rate)
-    return y, sr
+    
+    if y.shape[0]< 960000:
+        new_y= np.zeros(960000, dtype= np.float32)
+        new_y[:y.shape[0]] =y
+        return new_y , sr
+    else:
+        return y, sr
 
 def get_spectrogram(y,sr= 16000, num_mels= 80, apply_denoise=False,return_audio=False):    
     if apply_denoise:
