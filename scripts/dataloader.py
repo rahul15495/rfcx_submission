@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from mixup import MixUp
 from augment import do_aug
-from torch.utils.data import (Dataset , DataLoader)
+from torch.utils.data import (Dataset , DataLoader , RandomSampler)
 from preprocessor import Preprocessor
 
 
@@ -66,7 +66,7 @@ class BaseDataset(Dataset):
     
     def __getitem__(self, idx):
         
-        if self.enable_mixup:
+        if self.enable_mixup and (random.random() >0.5):
             
             try:
                 y,label = self.do_mixup(idx)
@@ -80,7 +80,7 @@ class BaseDataset(Dataset):
             label= record['labels']
 
         
-        if self.enable_aug:
+        if self.enable_aug and (random.random() >0.5):
             y = do_aug(y, self.SAMPLE_RATE)
             
         feat= load_mel.get_spectrogram(y,self.SAMPLE_RATE,apply_denoise=False,return_audio=False)
@@ -117,13 +117,15 @@ def get_dataloaders(train_dataset, test_dataset, batch_size, device):
 
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=batch_size,
+                                  sampler= RandomSampler(train_dataset),
                                   collate_fn =collate_fn,
                                   num_workers= 4,
                                   prefetch_factor=4,
                                  )
 
     eval_dataloader = DataLoader(test_dataset,
-                                 batch_size=batch_size, 
+                                 batch_size=batch_size,
+                                 sampler= RandomSampler(test_dataset),
                                  collate_fn =collate_fn,
                                  num_workers= 4,
                                  prefetch_factor=4,
