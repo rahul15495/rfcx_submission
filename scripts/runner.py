@@ -7,8 +7,9 @@ import pandas as pd
 from argparse import Namespace
 from model_builder import Wrapper_Model
 from metrics import LWLRAP
-from dataloader import (get_train_mapping, BaseDataset , get_dataloaders)
+from dataloader import (BaseDataset , get_dataloaders)
 from model import TransformerModel , TransformerForMaskedAcousticModel , TransformerConfig
+import pickle
 
 class Runner():
     def __init__(self, device, args):
@@ -56,7 +57,8 @@ class Runner():
         
         if self.args.ckpt_path:
             ckpt = torch.load(self.args.ckpt_path, map_location='cpu')
-            self.model.load_state_dict(ckpt)
+            self.model.upstream.load_state_dict(ckpt['upstream'])
+            self.model.downstream.load_state_dict(ckpt['downstream'])      
             
         if not self.args.training['upstream']:
             self.model.upstream.eval()
@@ -67,9 +69,13 @@ class Runner():
         
         df= pd.read_csv(self.args.csv_path)
         
-        mapping = get_train_mapping(df)
-        train_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=False, enable_aug=False)
-        test_dataset = BaseDataset(self.args.data_dir, mapping,  enable_mixup=False, enable_aug=False)
+        ################ load cached dataset ########################
+        f = open('cache_dataset.pkl', 'rb')
+        all_audio = pickle.load(f)
+        f.close()       
+        
+        train_dataset = BaseDataset(self.args.data_dir, df, cache= all_audio , enable_mixup=True, enable_aug=True, )
+        test_dataset =  BaseDataset(self.args.data_dir, df, cache= all_audio , enable_mixup=False, enable_aug=False)
         train_dataloader, eval_dataloader = get_dataloaders(train_dataset, test_dataset, self.args.batch_size,'cpu')
         self.train_dataloader= train_dataloader
         self.eval_dataloader= eval_dataloader        

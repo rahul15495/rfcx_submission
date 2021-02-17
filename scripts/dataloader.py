@@ -7,33 +7,24 @@ from mixup import MixUp
 from augment import do_aug
 from torch.utils.data import (Dataset , DataLoader , RandomSampler)
 from preprocessor import Preprocessor
-
-
-def get_train_mapping(df, num_classes=24):
-    recording_wise_labels= []
-
-    for idx, _id in enumerate(df['recording_id'].unique()):
-
-        temp= np.zeros(num_classes, np.int)
-
-        for _class in df.loc[df['recording_id'] == _id]['species_id'].unique():
-            temp[_class-1]=1
-            
-        recording_wise_labels.append({'recording_id':_id, 'labels':temp})
-        
-    return recording_wise_labels
+from tqdm.notebook import tqdm
 
 
 class BaseDataset(Dataset):
-    def __init__(self, root_dir, mapping, enable_mixup=False, enable_aug=False, SAMPLE_RATE=16000):
+    def __init__(self, root_dir, df,cache=None, enable_mixup=False, enable_aug=False, SAMPLE_RATE=32000, num_classes=24):
         
         self.root_dir = root_dir
-        self.mapping= mapping
+        self.df= df
+        self.all_audio= None
         self.enable_mixup = enable_mixup
         self.enable_aug = enable_aug
         self.SAMPLE_RATE = SAMPLE_RATE
-        self.num_samples= len(self.mapping)
+        self.num_classes= num_classes
+        self.cache = cache
+        self.num_samples= len(self.df)
         self.mixup= MixUp(load_mel.denoise, SAMPLE_RATE)
+        self.max_mixup = 4
+        self.load_all_audio()
 
         
     def __len__(self):
@@ -50,42 +41,91 @@ class BaseDataset(Dataset):
         y,_= load_mel.load_audio(input_file, self.SAMPLE_RATE)
         return y
     
+    def load_all_audio(self):
+        
+        if self.cache:
+            print('using cached dataset')
+            self.all_audio= self.cache
+            
+        else:
+            
+            all_audio= {}
+            for recording_id in tqdm(self.df.recording_id.unique()):
+                all_audio[recording_id] = self.load_audio(recording_id)
+
+            self.all_audio = all_audio
+        print('all audio loaded')
+        
+    """
     def do_mixup(self, idx):
         
         other_idx = self.get_random_idx(idx)
         
-        record1 = self.mapping[idx]
-        record2 = self.mapping[other_idx]
-        y1, label1 = self.load_audio(record1['recording_id']) , record1['labels']
-        y2, label2 = self.load_audio(record2['recording_id']) , record2['labels']
+        y1, label1 = self.get_sample_audio_label(idx)
+        y2, label2 = self.get_sample_audio_label(other_idx)
         
         _,y= self.mixup(y1, y2)
         label= np.bitwise_or(label1, label2)
 
         return y, label
+    """
+    
+    def do_mixup(self, idx):
+
+        y1, label1 = self.get_sample_audio_label(idx)    
+        
+        for e in range(0,random.randint(1, self.max_mixup)):
+            
+            other_idx = self.get_random_idx(idx)
+            y2, label2 = self.get_sample_audio_label(other_idx)
+
+            _,y1= self.mixup(y1, y2)
+            
+            label1= np.bitwise_or(label1, label2)
+
+        return y1, label1
+    
+    def get_sample_audio_label(self, idx):
+        
+        row=self.df.loc[idx]
+        recording_id= row.recording_id
+
+        y = self.all_audio[recording_id]
+
+        begin= np.ceil(row.t_min * self.SAMPLE_RATE).astype(int)
+        end= np.ceil(row.t_max * self.SAMPLE_RATE).astype(int)
+        wave = y[begin:end].copy()
+
+        #repeat samples to match 10 sec audio splits
+        out_wave = np.resize(wave, self.SAMPLE_RATE*10)
+        
+        
+        label= np.zeros(self.num_classes, np.int)
+        label[row['species_id']-1] =1
+        
+        return out_wave ,label
     
     def __getitem__(self, idx):
         
         if self.enable_mixup and (random.random() >0.5):
+            #print('mixup')
             
             try:
                 y,label = self.do_mixup(idx)
             except:
-                record= self.mapping[idx]
-                y= self.load_audio(record['recording_id'])
-                label= record['labels']                
+                y, label = self.get_sample_audio_label(idx)
         else:
-            record= self.mapping[idx]
-            y= self.load_audio(record['recording_id'])
-            label= record['labels']
+            y, label = self.get_sample_audio_label(idx)
 
         
         if self.enable_aug and (random.random() >0.5):
+            #print('aug')
             y = do_aug(y, self.SAMPLE_RATE)
             
         feat= load_mel.get_spectrogram(y,self.SAMPLE_RATE,apply_denoise=False,return_audio=False)
         return y, feat, label
     
+
 
 
 def get_dataloaders(train_dataset, test_dataset, batch_size, device):
@@ -124,7 +164,7 @@ def get_dataloaders(train_dataset, test_dataset, batch_size, device):
                                  )
 
     eval_dataloader = DataLoader(test_dataset,
-                                 batch_size=batch_size,
+                                 batch_size=1,
                                  sampler= RandomSampler(test_dataset),
                                  collate_fn =collate_fn,
                                  num_workers= 4,

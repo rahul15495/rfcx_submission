@@ -32,16 +32,11 @@ class MixUp:
         else:
             a,b= y1.copy() , y2.copy()
         
-        if option==1:
-            a= self.denoise(a, sr)
-        elif option==2:
-            b= self.denoise(b, sr)
-        elif option==3:
-            a= self.denoise(a, sr)
-            b= self.denoise(b, sr)
-        else:
-            #option==0
-            pass
+
+        a= self.denoise(a, sr)
+        b= self.denoise(b, sr)
+
         
-        y= alpha*a +(1-alpha)*b
+        #y= alpha*a +(1-alpha)*b
+        y= a+b
         return alpha,y
